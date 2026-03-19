@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULATA — Tournées 2025-26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#171b26; --surface2:#1e2435; --border:#2a3045;
+  --accent:#4fffb0; --accent2:#ff6b6b; --accent3:#ffd166;
+  --text:#e8eaf0; --muted:#7a8099;
+  --font-title:'Syne',sans-serif; --font-mono:'DM Mono',monospace;
+  --c1:#4fffb0; --c2:#38bdf8; --c3:#fb923c; --c4:#e879f9; --c5:#fbbf24;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;}
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:1000;
+}
+.logo{font-family:var(--font-title);font-weight:800;font-size:1.05rem;letter-spacing:.05em;color:var(--accent);}
+.logo span{color:var(--muted);font-weight:400;font-size:.75rem;margin-left:8px;}
+.header-stats{display:flex;gap:18px;margin-left:auto;}
+.hstat{text-align:center;font-size:.65rem;color:var(--muted);}
+.hstat strong{display:block;font-family:var(--font-title);font-weight:700;font-size:1rem;color:var(--text);}
+.app{display:grid;grid-template-columns:350px 1fr;height:calc(100vh - 53px);}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.filters{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:10;background:var(--surface);}
+.filter-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.agent-tabs{display:flex;gap:5px;flex-wrap:wrap;}
+.agent-tab{
+  padding:4px 11px;border-radius:4px;border:1px solid var(--border);
+  font-family:var(--font-mono);font-size:.7rem;cursor:pointer;
+  background:transparent;color:var(--muted);transition:all .15s;
+}
+.agent-tab:hover{border-color:var(--accent);color:var(--accent);}
+.agent-tab.active{color:var(--bg);font-weight:500;border-color:transparent;}
+.agent-tab[data-agent="all"].active{background:var(--accent);}
+.agent-tab[data-agent="1"].active{background:var(--c1);}
+.agent-tab[data-agent="2"].active{background:var(--c2);}
+.agent-tab[data-agent="3"].active{background:var(--c3);}
+.agent-tab[data-agent="4"].active{background:var(--c4);}
+.agent-tab[data-agent="5"].active{background:var(--c5);}
+.day-tabs{display:flex;gap:5px;}
+.day-tab{
+  flex:1;padding:4px 6px;border-radius:4px;border:1px solid var(--border);
+  font-family:var(--font-mono);font-size:.68rem;cursor:pointer;
+  background:transparent;color:var(--muted);transition:all .15s;text-align:center;
+}
+.day-tab:hover{border-color:var(--accent);color:var(--accent);}
+.day-tab.active{background:var(--accent);color:var(--bg);border-color:transparent;font-weight:500;}
+.export-btn{
+  margin:8px 10px 4px;padding:7px 14px;background:transparent;
+  border:1px solid var(--accent);color:var(--accent);
+  font-family:var(--font-mono);font-size:.68rem;border-radius:4px;cursor:pointer;
+  transition:all .15s;
+}
+.export-btn:hover{background:var(--accent);color:var(--bg);}
+.routes-list{padding:8px;display:flex;flex-direction:column;gap:7px;}
+.route-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .15s;
+}
+.route-card:hover{border-color:rgba(79,255,176,.4);}
+.route-card.active{border-color:var(--accent);}
+.route-card.hidden{display:none;}
+.route-card-header{padding:9px 11px;display:flex;align-items:center;gap:9px;}
+.route-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.route-meta{flex:1;min-width:0;}
+.route-title{font-family:var(--font-title);font-weight:700;font-size:.8rem;color:var(--text);}
+.route-sub{font-size:.62rem;color:var(--muted);margin-top:2px;}
+.route-badges{display:flex;gap:4px;flex-shrink:0;}
+.badge{font-size:.6rem;padding:2px 6px;border-radius:3px;background:var(--surface);border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
+.badge.warn{border-color:var(--accent3);color:var(--accent3);}
+.badge.ok{border-color:var(--accent);color:var(--accent);}
+.time-bar{height:3px;background:var(--surface);margin:0 11px 9px;border-radius:2px;overflow:hidden;}
+.time-bar-fill{height:100%;border-radius:2px;}
+.route-stops{max-height:0;overflow:hidden;transition:max-height .35s ease;border-top:0px solid var(--border);}
+.route-card.active .route-stops{max-height:800px;border-top:1px solid var(--border);}
+.stop-header{
+  padding:6px 11px;font-size:.6rem;color:var(--muted);
+  display:grid;grid-template-columns:70px 1fr 50px 40px 30px;gap:4px;
+  border-bottom:1px solid var(--border);background:var(--bg);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.stop-item{
+  padding:6px 11px;font-size:.67rem;border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:70px 1fr 50px 40px 30px;gap:4px;align-items:start;
+}
+.stop-item:last-child{border-bottom:none;}
+.stop-time{color:var(--accent3);font-size:.62rem;}
+.stop-commune{color:var(--muted);font-size:.6rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stop-school{color:var(--text);}
+.stop-type{font-size:.58rem;padding:1px 4px;border-radius:2px;background:var(--surface);display:inline-block;margin-top:2px;}
+.stop-type.college{background:#1e2a40;color:var(--c2);}
+.stop-type.priv{background:#2a1e20;color:var(--accent2);}
+.stop-poches{color:var(--accent3);font-size:.62rem;text-align:right;}
+.map-panel{position:relative;}
+#map{width:100%;height:100%;}
+.map-legend{
+  position:absolute;top:12px;right:12px;z-index:500;
+  background:rgba(15,17,23,.92);border:1px solid var(--border);
+  border-radius:6px;padding:10px 13px;font-size:.63rem;backdrop-filter:blur(6px);
+}
+.map-legend h4{font-family:var(--font-title);font-size:.7rem;margin-bottom:8px;color:var(--accent);}
+.legend-item{display:flex;align-items:center;gap:7px;margin-bottom:3px;color:var(--muted);}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.info-bar{
+  position:absolute;bottom:12px;left:12px;right:12px;z-index:500;
+  background:rgba(15,17,23,.93);border:1px solid var(--border);
+  border-radius:6px;padding:9px 14px;font-size:.68rem;backdrop-filter:blur(6px);
+  display:none;align-items:center;gap:14px;
+}
+.info-bar.show{display:flex;}
+.ib-title{font-family:var(--font-title);font-weight:700;font-size:.82rem;}
+.ib-detail{color:var(--muted);font-size:.63rem;margin-top:2px;}
+.ib-close{margin-left:auto;cursor:pointer;color:var(--muted);font-size:.9rem;}
+.ib-close:hover{color:var(--text);}
+.week-banner{
+  background:var(--surface2);border-bottom:1px solid var(--border);
+  padding:6px 14px;font-size:.65rem;color:var(--muted);
+  display:flex;align-items:center;gap:8px;
+}
+.week-banner strong{color:var(--accent);font-family:var(--font-title);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">ULATA <span>Tournées 2025–26 · Landes (40)</span></div>
+  <div class="header-stats">
+    <div class="hstat"><strong>5</strong>agents</div>
+    <div class="hstat"><strong>4</strong>jours/sem.</div>
+    <div class="hstat"><strong>1</strong>semaine</div>
+    <div class="hstat"><strong>164</strong>communes</div>
+    <div class="hstat"><strong>233</strong>arrêts</div>
+    <div class="hstat"><strong>2 559</strong>km</div>
+  </div>
+</header>
+<div class="app">
+  <div class="sidebar">
+    <div class="filters">
+      <div>
+        <div class="filter-label">Agent</div>
+        <div class="agent-tabs">
+          <button class="agent-tab active" data-agent="all">Tous</button>
+          <button class="agent-tab" data-agent="1">A1</button>
+          <button class="agent-tab" data-agent="2">A2</button>
+          <button class="agent-tab" data-agent="3">A3</button>
+          <button class="agent-tab" data-agent="4">A4</button>
+          <button class="agent-tab" data-agent="5">A5</button>
+        </div>
+      </div>
+      <div>
+        <div class="filter-label">Journée</div>
+        <div class="day-tabs">
+          <button class="day-tab active" data-day="all">Toutes</button>
+          <button class="day-tab" data-day="Lundi">Lun</button>
+          <button class="day-tab" data-day="Mardi">Mar</button>
+          <button class="day-tab" data-day="Jeudi">Jeu</button>
+          <button class="day-tab" data-day="Vendredi">Ven</button>
+        </div>
+      </div>
+    </div>
+    <div class="week-banner">
+      <strong>Semaine unique</strong> · 9h30 → 16h30 · Pause 30min · Lu/Ma/Je/Ve
+    </div>
+    <button class="export-btn" id="exportBtn">⬇ Exporter le plan en CSV</button>
+    <div class="routes-list" id="routesList"></div>
+  </div>
+  <div class="map-panel">
+    <div id="map"></div>
+    <div class="map-legend">
+      <h4>Agents</h4>
+      <div class="legend-item"><div class="legend-dot" style="background:#4fffb0"></div>Agent 1</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Agent 2</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Agent 3</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e879f9"></div>Agent 4</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Agent 5</div>
+    </div>
+    <div class="info-bar" id="infoBar">
+      <div>
+        <div class="ib-title" id="ibTitle"></div>
+        <div class="ib-detail" id="ibDetail"></div>
+      </div>
+      <div class="ib-close" id="ibClose">✕</div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script>
+function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s);}
+document.addEventListener('DOMContentLoaded',function(){
+  loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',function(){ initApp(); });
+});
+
+const PLAN={"Agent 1":[{"jour":"Lundi","communes":["Saugnac-et-Cambran","Seyresse","Oeyreluy","Tercis-les-Bains","Heugas","Cagnotte","Gaas","Pouillon","Labatut","Saint-Cricq-du-Gave","Peyrehorade","Sames (64)  64520","Orthevielle","Bélus","Saint-Lon-les-Mines","Mées"],"nb_stops":20,"km":163,"total_min":378,"schools":[{"commune":"Saugnac-et-Cambran","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Seyresse","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":3},{"commune":"Oeyreluy","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":17},{"commune":"Tercis-les-Bains","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Heugas","nom":"RPI Heugas Saint Pandelon","type":"École Primaire Publique","poches":2,"effectifs":26},{"commune":"Cagnotte","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Gaas","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":4},{"commune":"Pouillon","nom":"NOTRE DAME DU SACRE COEUR","type":"École Élémentaire Privée","poches":1,"effectifs":10},{"commune":"Pouillon","nom":" ","type":"École Élémentaire Publique","poches":1,"effectifs":22},{"commune":"Pouillon","nom":"Collège Rosa Parks","type":"Collège public","poches":1,"effectifs":126},{"commune":"Labatut","nom":"FRANCOIS BACO","type":"École Primaire Publique","poches":1,"effectifs":17},{"commune":"Saint-Cricq-du-Gave","nom":"RPI Cauneille Saint Cricq Sorde","type":"École Élémentaire Publique","poches":1,"effectifs":18},{"commune":"Peyrehorade","nom":"ECOLE JEAN RAMEAU-LEO LAPEYRE","type":"École Élémentaire Publique","poches":3,"effectifs":50},{"commune":"Peyrehorade","nom":"Collège du Pays d'Orthe","type":"Collège public","poches":1,"effectifs":162},{"commune":"Sames (64)  64520","nom":"RPI interdépartemental ","type":"Ecole élémentaire Publique","poches":1,"effectifs":17},{"commune":"Orthevielle","nom":"RPI Orthevielle Port de Lanne","type":"École Primaire Publique","poches":2,"effectifs":29},{"commune":"Bélus","nom":"RPI Belus Saint Etienne d'Orthe","type":"École Primaire Publique","poches":1,"effectifs":4},{"commune":"Saint-Lon-les-Mines","nom":"NOTRE-DAME","type":"École Élémentaire Privée","poches":1,"effectifs":3},{"commune":"Saint-Lon-les-Mines","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":7},{"commune":"Mées","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":16}],"arrivals":["10h20","10h36","10h48","11h01","11h16","11h31","11h44","11h57","13h04","13h17","13h37","13h57","14h10","14h25","14h38","15h09"]},{"jour":"Mardi","communes":["Saint-Paul-en-Born","Aureilhan","Mimizan","Bias","Saint-Julien-en-Born","Lit-et-Mixe"],"nb_stops":7,"km":154,"total_min":238,"schools":[{"commune":"Saint-Paul-en-Born","nom":"RPI Aureilhan Saint Paul en Born","type":"École Primaire Publique","poches":2,"effectifs":22},{"commune":"Aureilhan","nom":"nan","type":"École Primaire Publique","poches":1,"effectifs":5},{"commune":"Mimizan","nom":"BOURG","type":"École Élémentaire Publique","poches":2,"effectifs":49},{"commune":"Mimizan","nom":"PLAGE","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Mimizan","nom":"BEL AIR","type":"École Primaire Publique","poches":1,"effectifs":12},{"commune":"Bias","nom":"RPI Bias Mezos","type":"École Primaire Publique","poches":1,"effectifs":21},{"commune":"Saint-Julien-en-Born","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Lit-et-Mixe","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":11}],"arrivals":["10h38","10h51","11h07","11h44","11h59","12h48"]},{"jour":"Jeudi","communes":["Castets","Linxe","Vielle-Saint-Girons","Léon","Azur","Magescq"],"nb_stops":7,"km":151,"total_min":235,"schools":[{"commune":"Castets","nom":"Jean d'Anse","type":"École Primaire Publique","poches":2,"effectifs":31},{"commune":"Linxe","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Linxe","nom":"Collège Lucie Aubrac","type":"Collège public","poches":1,"effectifs":113},{"commune":"Vielle-Saint-Girons","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":11},{"commune":"Léon","nom":"LES PIGNONS","type":"École Primaire Publique","poches":1,"effectifs":12},{"commune":"Azur","nom":"RPI Azur Messanges Moliets","type":"École Primaire Publique","poches":2,"effectifs":30},{"commune":"Magescq","nom":" ","type":"École Primaire Publique","poches":2,"effectifs":32}],"arrivals":["10h26","10h45","11h15","11h36","11h53","12h42"]},{"jour":"Vendredi","communes":["Eugénie-les-Bains","Duhort-Bachen","Aire-sur-l'Adour","Geaune","Urgons","Miramont-Sensacq"],"nb_stops":9,"km":97,"total_min":195,"schools":[{"commune":"Eugénie-les-Bains","nom":"RPI Eugénie les Bains","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Duhort-Bachen","nom":"RPI Duhort Bachen Larrivière Saint Savin Renung","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Aire-sur-l'Adour","nom":"FRANCOISE GIROUD VICTOR LOURTI","type":"École Élémentaire Publique","poches":3,"effectifs":43},{"commune":"Aire-sur-l'Adour","nom":"Collège Gaston Crampe","type":"Collège public","poches":1,"effectifs":116},{"commune":"Aire-sur-l'Adour","nom":"ST JOSEPH/JEANNE D'ARC","type":"École Élémentaire Privée","poches":1,"effectifs":21},{"commune":"Geaune","nom":"ECOLE PRIMAIRE DE LA TOUR","type":"École Élémentaire Publique","poches":1,"effectifs":10},{"commune":"Geaune","nom":"ECOLE A (des arènes)","type":"École Élémentaire Publique","poches":1,"effectifs":7},{"commune":"Urgons","nom":"RPI Philondenx - Urgons","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Miramont-Sensacq","nom":"RPI Miramont","type":"École Primaire Publique","poches":1,"effectifs":5}],"arrivals":["9h55","10h11","10h27","11h09","11h35","11h56"]}],"Agent 2":[{"jour":"Lundi","communes":["Orx","Saint-André-de-Seignanx","Saint-Martin-de-Seignanx","Tarnos","Ondres","Labenne","Capbreton"],"nb_stops":17,"km":183,"total_min":370,"schools":[{"commune":"Orx","nom":"RPI Orx Saubrigues","type":"École Élémentaire Publique","poches":1,"effectifs":20},{"commune":"Saint-André-de-Seignanx","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Saint-Martin-de-Seignanx","nom":"Collège François Truffaut","type":"Collège public","poches":1,"effectifs":139},{"commune":"Saint-Martin-de-Seignanx","nom":"JULES FERRY","type":"École Élémentaire Publique","poches":4,"effectifs":70},{"commune":"Tarnos","nom":"NOTRE DAME DES FORGES","type":"École Élémentaire Privée","poches":1,"effectifs":15},{"commune":"Tarnos","nom":"JEAN JAURES","type":"École Élémentaire Publique","poches":2,"effectifs":29},{"commune":"Tarnos","nom":"DANIEL POUEYMIDOU","type":"École Élémentaire Publique","poches":2,"effectifs":25},{"commune":"Tarnos","nom":"JEAN MOUCHET","type":"École Élémentaire Publique","poches":2,"effectifs":25},{"commune":"Tarnos","nom":"F. CONCARET","type":"École Élémentaire Publique","poches":2,"effectifs":27},{"commune":"Tarnos","nom":"HENRI BARBUSSE","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Tarnos","nom":"Collège Langevin Wallon","type":"Collège public","poches":1,"effectifs":137},{"commune":"Ondres","nom":"Dous Maynadyes","type":"École Élémentaire Publique","poches":2,"effectifs":25},{"commune":"Ondres","nom":" André Barromes","type":"École Élémentaire Publique","poches":2,"effectifs":37},{"commune":"Labenne","nom":"YVES ULYSSE","type":"École Élémentaire Publique","poches":3,"effectifs":58},{"commune":"Labenne","nom":"OCEANE","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Capbreton","nom":"Saint Joseph-Sainte Marie","type":"École Primaire Privée","poches":2,"effectifs":28},{"commune":"Capbreton","nom":"SAINT EXUPERY","type":"École Élémentaire Publique","poches":3,"effectifs":59}],"arrivals":["10h53","11h08","11h23","11h50","13h33","13h58","14h22"]},{"jour":"Mardi","communes":["Campagne","Meilhan","Carcarès-Sainte-Croix","Tartas","Bégaar","Carcen-Ponson","Beylongue","Ygos-Saint-Saturnin","Saint-Martin-d'Oney","Le Leuy","Souprosse","Toulouzette"],"nb_stops":15,"km":108,"total_min":268,"schools":[{"commune":"Campagne","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Meilhan","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":15},{"commune":"Carcarès-Sainte-Croix","nom":"RPI Carcares","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Tartas","nom":"ECOLE B","type":"École Élémentaire Publique","poches":2,"effectifs":24},{"commune":"Tartas","nom":"Collège privé Saint Joseph","type":"Collège privé","poches":1,"effectifs":41},{"commune":"Tartas","nom":"Collège Jean Rostand","type":"Collège public","poches":1,"effectifs":116},{"commune":"Tartas","nom":"SAINT JOSEPH","type":"École Élémentaire Privée","poches":1,"effectifs":18},{"commune":"Bégaar","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Carcen-Ponson","nom":"RPI Beylongue Carcen Saint Yaguen Villenave","type":"École Primaire Publique","poches":1,"effectifs":4},{"commune":"Beylongue","nom":"RPI Beylongue Carcen Saint Yaguen Villenave","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Ygos-Saint-Saturnin","nom":"RPI Arengosse Ousse Ygos","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Saint-Martin-d'Oney","nom":"RPI Saint Martin d'Oney Geloux","type":"École Primaire Publique","poches":2,"effectifs":28},{"commune":"Le Leuy","nom":"RPI Aurice Cauna Lamothe Le Leuy","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Souprosse","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":4},{"commune":"Toulouzette","nom":"du parc de Toulouzette  / RPI Hauriet Montaut Toulouzette","type":"École Primaire Publique","poches":1,"effectifs":11}],"arrivals":["9h42","9h57","10h12","10h27","11h14","11h30","11h46","12h39","12h59","13h22","13h39","13h55"]},{"jour":"Jeudi","communes":["Labouheyre","Liposthey","Pissos","Moustey","Saugnac-et-Muret"],"nb_stops":6,"km":149,"total_min":223,"schools":[{"commune":"Labouheyre","nom":"ANNE SYLVESTRE","type":"École Primaire Publique","poches":2,"effectifs":27},{"commune":"Labouheyre","nom":"Collège Félix Arnaudin","type":"Collège public","poches":1,"effectifs":104},{"commune":"Liposthey","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Pissos","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Moustey","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":8},{"commune":"Saugnac-et-Muret","nom":" ","type":"École Primaire Publique","poches":2,"effectifs":24}],"arrivals":["10h23","10h54","11h13","11h35","11h54"]},{"jour":"Vendredi","communes":["Créon-d'Armagnac","Gabarret"],"nb_stops":5,"km":83,"total_min":140,"schools":[{"commune":"Créon-d'Armagnac","nom":"RPI Créon Labastide","type":"École Élémentaire Publique","poches":1,"effectifs":6},{"commune":"Gabarret","nom":"SAINTE JEANNE D ARC","type":"École Primaire Privée","poches":1,"effectifs":6},{"commune":"Gabarret","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":12},{"commune":"Gabarret","nom":"Collège privé Saint-Jean-Bosco ","type":"Collège privé","poches":1,"effectifs":32},{"commune":"Gabarret","nom":"Collège Jules Ferry","type":"Collège public","poches":1,"effectifs":38}],"arrivals":["10h08","10h25"]}],"Agent 3":[{"jour":"Lundi","communes":["Escource","Lüe","Pontenx-les-Forges","Parentis-en-Born","Ychoux","Sanguinet","Biscarrosse","Gastes"],"nb_stops":14,"km":201,"total_min":359,"schools":[{"commune":"Escource","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":7},{"commune":"Lüe","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":7},{"commune":"Pontenx-les-Forges","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Parentis-en-Born","nom":"ECOLE DES ARENES ET PUNTET","type":"École Élémentaire Publique","poches":5,"effectifs":84},{"commune":"Parentis-en-Born","nom":"Collège St Exupéry","type":"Collège public","poches":1,"effectifs":200},{"commune":"Ychoux","nom":" ","type":"École Élémentaire Publique","poches":2,"effectifs":35},{"commune":"Sanguinet","nom":"LE PIN VERT","type":"École Élémentaire Publique","poches":2,"effectifs":38},{"commune":"Biscarrosse","nom":"MEYRIE","type":"École Élémentaire Publique","poches":3,"effectifs":54},{"commune":"Biscarrosse","nom":"PETIT PRINCE","type":"École Élémentaire Publique","poches":2,"effectifs":29},{"commune":"Biscarrosse","nom":"PIERRICQ","type":"École Élémentaire Publique","poches":1,"effectifs":20},{"commune":"Biscarrosse","nom":"PLAGE","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Biscarrosse","nom":"Collège Jean Mermoz","type":"Collège public","poches":1,"effectifs":93},{"commune":"Biscarrosse","nom":"Collège Nelson Mandela","type":"Collège public","poches":1,"effectifs":93},{"commune":"Gastes","nom":"RPI Sainte Eulalie Gastes","type":"École Primaire Publique","poches":1,"effectifs":23}],"arrivals":["10h27","10h48","11h07","11h28","11h58","12h55","13h18","14h29"]},{"jour":"Mardi","communes":["Onard","Vicq-d'Auribat","Poyanne","Gamarde les bains","Montfort-en-Chalosse","Poyartin","Sort-en-Chalosse","Hinx","Préchacq-les-Bains","Clermont","Mimbaste","Habas","Ossage","Pomarez"],"nb_stops":13,"km":140,"total_min":283,"schools":[{"commune":"Onard","nom":"RPI Cassen Gousse Louer Onard Saint Geours d'Auribat Saint Jean de Lier","type":"École Élémentaire Publique","poches":1,"effectifs":15},{"commune":"Vicq-d'Auribat","nom":"RPI Cassen Gousse Louer Onard Saint Geours d'Auribat Saint Jean de Lier","type":"École Élémentaire Publique","poches":1,"effectifs":6},{"commune":"Poyanne","nom":"RPI Laurede Poyanne","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Gamarde les bains","nom":"nan","type":"École Primaire Publique","poches":1,"effectifs":8},{"commune":"Montfort-en-Chalosse","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Montfort-en-Chalosse","nom":"Collège Serge Barranx","type":"Collège public","poches":1,"effectifs":129},{"commune":"Poyartin","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Sort-en-Chalosse","nom":"RPI Sort Garrey","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Hinx","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Préchacq-les-Bains","nom":"RPI Goos Préchacq Gamarde","type":"École Primaire Publique","poches":3,"effectifs":44},{"commune":"Clermont","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Mimbaste","nom":"RPI Misson Mimbaste","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Habas","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":17},{"commune":"Ossage","nom":"nan","type":"école élémentaire publique","poches":1,"effectifs":13},{"commune":"Pomarez","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":13}],"arrivals":["10h02","10h14","10h29","10h45","10h59","11h22","11h38","11h51","12h37","13h00","13h14","13h35","13h50","14h08"]},{"jour":"Jeudi","communes":["Arengosse ","Arjuzan / Morcenx","Morcenx","Solférino","Onesse-Laharie","Lesperon","Rion-des-Landes"],"nb_stops":9,"km":117,"total_min":218,"schools":[{"commune":"Arengosse ","nom":"SAINTE THERESE","type":"École Primaire Privée","poches":1,"effectifs":5},{"commune":"Arjuzan / Morcenx","nom":"RPI Morcenx la Nouvelle","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Morcenx","nom":"GARE","type":"École Élémentaire Publique","poches":2,"effectifs":30},{"commune":"Morcenx","nom":"Collège Henri Scognamiglio","type":"Collège public","poches":1,"effectifs":92},{"commune":"Solférino","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":7},{"commune":"Onesse-Laharie","nom":" ","type":"École Élémentaire Publique","poches":1,"effectifs":11},{"commune":"Lesperon","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Rion-des-Landes","nom":"JEAN MENAUT","type":"École Élémentaire Publique","poches":2,"effectifs":43},{"commune":"Rion-des-Landes","nom":"Collège Marie Curie","type":"Collège public","poches":1,"effectifs":67}],"arrivals":["10h00","10h19","10h29","10h59","11h22","11h46","12h39"]},{"jour":"Vendredi","communes":["Pouydesseaux","Sarbazan","Roquefort","Cachen","Retjons","Saint-Justin"],"nb_stops":8,"km":84,"total_min":172,"schools":[{"commune":"Pouydesseaux","nom":"RPI Bostens Gaillères Pouydesseaux","type":"École Primaire Publique","poches":1,"effectifs":19},{"commune":"Sarbazan","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":8},{"commune":"Roquefort","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Roquefort","nom":"Collège Georges Sand","type":"Collège public","poches":1,"effectifs":63},{"commune":"Roquefort","nom":"SAINTE-ELISABETH","type":"École Élémentaire Privée","poches":1,"effectifs":7},{"commune":"Cachen","nom":"RPI Arue Cachen Lencouacq","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Retjons","nom":"RPI Bourriot Losse Retjons Saint Gor Vielle Soubiran ","type":"École Primaire Publique","poches":1,"effectifs":5},{"commune":"Saint-Justin","nom":"RPI Le Freche Saint Justin","type":"École Primaire Publique","poches":1,"effectifs":11}],"arrivals":["9h47","10h02","10h15","10h54","11h16","11h44"]}],"Agent 4":[{"jour":"Lundi","communes":["Mont-de-Marsan","Mont-de-Marsan ","Saint-Pierre-du-Mont","Saint-Perdon","Haut-Mauco","Benquet","Bretagne de Marsan","Artassenx","Mazerolles","Bougue","Saint-Avit","Grenade-sur-l'Adour"],"nb_stops":27,"km":76,"total_min":353,"schools":[{"commune":"Mont-de-Marsan","nom":"BEILLET JEAN MOULIN","type":"École Élémentaire Publique","poches":2,"effectifs":33},{"commune":"Mont-de-Marsan","nom":"ARENES","type":"École Élémentaire Publique","poches":1,"effectifs":20},{"commune":"Mont-de-Marsan","nom":"POUY","type":"École Élémentaire Publique","poches":2,"effectifs":24},{"commune":"Mont-de-Marsan","nom":"JEAN CASSAIGNE","type":"École Élémentaire Privée","poches":3,"effectifs":46},{"commune":"Mont-de-Marsan","nom":"SAINT MEDARD","type":"École Élémentaire Publique","poches":2,"effectifs":44},{"commune":"Mont-de-Marsan","nom":"Collège Jean Rostand","type":"Collège public","poches":1,"effectifs":111},{"commune":"Mont-de-Marsan","nom":"BOURG NEUF","type":"École Élémentaire Publique","poches":2,"effectifs":33},{"commune":"Mont-de-Marsan","nom":"PEYROUAT","type":"École Élémentaire Publique","poches":1,"effectifs":23},{"commune":"Mont-de-Marsan","nom":"ARGENTE","type":"École Élémentaire Publique","poches":2,"effectifs":25},{"commune":"Mont-de-Marsan","nom":"PEGLE","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Mont-de-Marsan","nom":"Collège Victor Duruy","type":"Collège public","poches":1,"effectifs":115},{"commune":"Mont-de-Marsan","nom":"Collège privé Jean Cassaigne ","type":"Collège privé","poches":1,"effectifs":111},{"commune":"Mont-de-Marsan","nom":"Collège Cel le Gaucher","type":"Collège public","poches":1,"effectifs":119},{"commune":"Mont-de-Marsan ","nom":"SAINT JEAN D'AOUT","type":"École Élémentaire Publique","poches":2,"effectifs":30},{"commune":"Saint-Pierre-du-Mont","nom":"JULES FERRY","type":"École Primaire Publique","poches":2,"effectifs":24},{"commune":"Saint-Pierre-du-Mont","nom":"BIARNES","type":"École Élémentaire Publique","poches":2,"effectifs":27},{"commune":"Saint-Pierre-du-Mont","nom":"FREDERIC MISTRAL","type":"École Primaire Publique","poches":2,"effectifs":37},{"commune":"Saint-Pierre-du-Mont","nom":"Collège Lubet Barbon","type":"Collège public","poches":1,"effectifs":254},{"commune":"Saint-Perdon","nom":" ","type":"École Primaire Publique","poches":2,"effectifs":23},{"commune":"Haut-Mauco","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Benquet","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":19},{"commune":"Bretagne de Marsan","nom":"nan","type":"École Élémentaire Publique","poches":1,"effectifs":9},{"commune":"Artassenx","nom":"RPI Artassenx Bascons Bretagne Saint Maurice ","type":"École Élémentaire Publique","poches":1,"effectifs":22},{"commune":"Mazerolles","nom":"nan","type":"école maternelle publique","poches":1,"effectifs":10},{"commune":"Bougue","nom":"RPI Laglorieuse Mazerolles Bougue ","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Saint-Avit","nom":"RPI Lucbardez Saint Avit","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Grenade-sur-l'Adour","nom":"Gaston Phoebus","type":"École Primaire Publique","poches":1,"effectifs":17},{"commune":"Grenade-sur-l'Adour","nom":"Collège Val d'Adour","type":"Collège public","poches":1,"effectifs":97},{"commune":"Grenade-sur-l'Adour","nom":"NOTRE DAME","type":"École Élémentaire Privée","poches":1,"effectifs":9}],"arrivals":["9h31","11h41","11h56","13h11","13h28","13h43","13h57","14h13","14h29","14h43","15h00","15h29"]},{"jour":"Mardi","communes":["Rivière-Saas-et-Gourby","Saubusse","Orist","Josse","Saint-Jean-de-Marsacq","Saint-Martin-de-Hinx","Sainte-Marie-de-Gosse","Saint-Laurent-de-Gosse","Saint-Etienne-d'Orthe","Saint-Geours-de-Maremne"],"nb_stops":10,"km":174,"total_min":290,"schools":[{"commune":"Rivière-Saas-et-Gourby","nom":" ","type":"École Primaire Publique","poches":2,"effectifs":25},{"commune":"Saubusse","nom":"Les Cigognes","type":"École Primaire Publique","poches":1,"effectifs":14},{"commune":"Orist","nom":"RPI Orist Pey","type":"École Primaire Publique","poches":1,"effectifs":13},{"commune":"Josse","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Saint-Jean-de-Marsacq","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":19},{"commune":"Saint-Martin-de-Hinx","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":23},{"commune":"Sainte-Marie-de-Gosse","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Saint-Laurent-de-Gosse","nom":"RPI Biarrotte Biaudos Saint Laurent","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Saint-Etienne-d'Orthe","nom":"RPI Belus Saint Etienne d'Orthe","type":"École Primaire Publique","poches":1,"effectifs":5},{"commune":"Saint-Geours-de-Maremne","nom":"JC DARZACQ","type":"École Primaire Publique","poches":3,"effectifs":50}],"arrivals":["10h33","10h47","11h00","11h16","11h30","11h45","12h30","12h46","13h08","13h30"]},{"jour":"Jeudi","communes":["Montgaillard","Sarraziet","Vielle-Tursan","Samadet","Mant","Hagetmau","Sainte-Colombe","Dumes","Saint-Sever"],"nb_stops":13,"km":74,"total_min":211,"schools":[{"commune":"Montgaillard","nom":"RPI Fargues Montgaillard","type":"École Élémentaire Publique","poches":1,"effectifs":11},{"commune":"Sarraziet","nom":"RPI Coudures Montsoue Sarraziet","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Vielle-Tursan","nom":"RPI Aubagnan Bats Vielle Tursan","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Samadet","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":5},{"commune":"Mant","nom":"RPI Lacrabe Mant Monségur Morganx Peyre Poudenx","type":"École Élémentaire Publique","poches":1,"effectifs":11},{"commune":"Hagetmau","nom":"SIMONE VEIL","type":"École Élémentaire Publique","poches":2,"effectifs":38},{"commune":"Hagetmau","nom":"Collège Jean-Marie Lonné","type":"Collège public","poches":1,"effectifs":172},{"commune":"Sainte-Colombe","nom":"RPI Horsarrieu Sainte Colombe Serres Gaston","type":"École Primaire Publique","poches":1,"effectifs":12},{"commune":"Dumes","nom":"RPI Audignon Banos Dumes Eyres Moncube","type":"École Maternelle Publique","poches":1,"effectifs":8},{"commune":"Saint-Sever","nom":"Ecole primaire du Parc de Toulouzette","type":"École Élémentaire Publique","poches":3,"effectifs":50},{"commune":"Saint-Sever","nom":"Collège Cap de Gascogne","type":"Collège public","poches":1,"effectifs":114},{"commune":"Saint-Sever","nom":"Collège privé Sainte-Thérèse ","type":"Collège privé","poches":1,"effectifs":43},{"commune":"Saint-Sever","nom":"SAINTE THERESE","type":"École Élémentaire Privée","poches":2,"effectifs":23}],"arrivals":["9h46","10h02","10h16","10h33","10h48","11h09","11h33","11h47","12h34"]},{"jour":"Vendredi","communes":["Brocas","Garein","Labrit","Luxey","Sore","Sabres"],"nb_stops":5,"km":115,"total_min":176,"schools":[{"commune":"Brocas","nom":"RPI Belis Brocas Canenx Ceres Maillères","type":"École Primaire Publique","poches":1,"effectifs":15},{"commune":"Garein","nom":"RPI Garein Labrit Le Sen Vert","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Labrit","nom":"nan","type":"école maternelle/primaire","poches":1,"effectifs":12},{"commune":"Labrit","nom":"Collège Henri Emmanuelli","type":"Collège public","poches":1,"effectifs":71},{"commune":"Luxey","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Sore","nom":"nan","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Sabres","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":13}],"arrivals":["9h49","10h08","10h30","11h02","11h26","11h58"]}],"Agent 5":[{"jour":"Lundi","communes":["Pontonx-sur-l'Adour","Téthieu","Saint-Vincent-de-Paul","Saint-Paul-lès-Dax","Dax","Narrosse","Herm","Taller","Laluque"],"nb_stops":20,"km":135,"total_min":347,"schools":[{"commune":"Pontonx-sur-l'Adour","nom":"ECOLE PRIMAIRE JEAN JAURES","type":"École Primaire Publique","poches":2,"effectifs":26},{"commune":"Téthieu","nom":"RPI Buglose Saint Vincent de Paul Tethieu","type":"École Primaire Publique","poches":2,"effectifs":31},{"commune":"Saint-Vincent-de-Paul","nom":"Collège privé Vincent de Paul","type":"Collège privé","poches":1,"effectifs":21},{"commune":"Saint-Vincent-de-Paul","nom":"VINCENT DE PAUL","type":"École Primaire Privée","poches":1,"effectifs":21},{"commune":"Saint-Paul-lès-Dax","nom":"JULES BARROUILLET","type":"École Élémentaire Publique","poches":2,"effectifs":37},{"commune":"Saint-Paul-lès-Dax","nom":"HENRI LAVIELLE","type":"École Élémentaire Publique","poches":2,"effectifs":38},{"commune":"Saint-Paul-lès-Dax","nom":"MARIE CURIE","type":"École Primaire Publique","poches":2,"effectifs":28},{"commune":"Saint-Paul-lès-Dax","nom":"GASTON LARRIEU","type":"École Primaire Publique","poches":2,"effectifs":24},{"commune":"Saint-Paul-lès-Dax","nom":"Collège Jean Moulin","type":"Collège public","poches":1,"effectifs":158},{"commune":"Saint-Paul-lès-Dax","nom":"Collège Danielle Mitterrand","type":"Collège public","poches":1,"effectifs":114},{"commune":"Dax","nom":"ST JACQUES DE COMPOSTELLE","type":"École Primaire Privée","poches":4,"effectifs":65},{"commune":"Dax","nom":"ROBERT BADINTER village des Pins","type":"École Primaire Publique","poches":2,"effectifs":32},{"commune":"Dax","nom":"LUCIE AUBRAC école primaire Saint Vincent","type":"École Élémentaire Publique","poches":2,"effectifs":28},{"commune":"Dax","nom":"SULLY","type":"École Élémentaire Publique","poches":2,"effectifs":30},{"commune":"Dax","nom":"ANTOINE DE SAINT EXUPERY","type":"École Élémentaire Publique","poches":2,"effectifs":34},{"commune":"Dax","nom":"Collège privé Saint-Jacques-de-Compostelle","type":"Collège privé","poches":1,"effectifs":111},{"commune":"Dax","nom":"SIMONE VEIL","type":"École Primaire Publique","poches":1,"effectifs":13},{"commune":"Dax","nom":"Collège d'Albret","type":"Collège public","poches":1,"effectifs":158},{"commune":"Narrosse","nom":"RPI Narrosse Candresse","type":"École Élémentaire Publique","poches":4,"effectifs":60},{"commune":"Herm","nom":"nan","type":"École Primaire Publique","poches":1,"effectifs":13},{"commune":"Taller","nom":"RPI Laluque Lesgor Taller","type":"École Primaire Publique","poches":1,"effectifs":18},{"commune":"Laluque","nom":"nan","type":"École Primaire Publique","poches":1,"effectifs":9}],"arrivals":["10h10","10h26","10h40","11h08","12h44","14h08","14h35","14h56","15h14"]},{"jour":"Mardi","communes":["Soustons","Tosse","Saubion","Angresse","Benesse Maremne","Soorts-Hossegor","Seignosse","Saint-Vincent-de-Tyrosse","Vieux-Boucau-les-Bains"],"nb_stops":13,"km":190,"total_min":338,"schools":[{"commune":"Soustons","nom":"ISLE VERTE","type":"École Élémentaire Publique","poches":4,"effectifs":68},{"commune":"Soustons","nom":"NOTRE DAME","type":"École Primaire Privée","poches":1,"effectifs":11},{"commune":"Tosse","nom":" ","type":"École Primaire Publique","poches":3,"effectifs":48},{"commune":"Saubion","nom":" ","type":"École Primaire Publique","poches":1,"effectifs":15},{"commune":"Angresse","nom":" ","type":"École Primaire Publique","poches":2,"effectifs":26},{"commune":"Benesse Maremne","nom":"M. GENEVOIX","type":"École Primaire Publique","poches":2,"effectifs":28},{"commune":"Soorts-Hossegor","nom":" 134 avenue des Ecoles","type":"École Primaire Publique","poches":1,"effectifs":16},{"commune":"Soorts-Hossegor","nom":"ECOLE A (rue du centre)","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Seignosse","nom":"GRAND CHENE","type":"École Primaire Publique","poches":4,"effectifs":64},{"commune":"Saint-Vincent-de-Tyrosse","nom":"SAINTE_MARIE","type":"École Élémentaire Privée","poches":1,"effectifs":12},{"commune":"Saint-Vincent-de-Tyrosse","nom":"LES ARENES","type":"École Élémentaire Publique","poches":2,"effectifs":40},{"commune":"Saint-Vincent-de-Tyrosse","nom":"ECOLE DE LA LANDE","type":"École Primaire Publique","poches":1,"effectifs":17},{"commune":"Vieux-Boucau-les-Bains","nom":"Ecole Ameaux du Lacs de Boucau les Bains","type":"École Primaire Publique","poches":1,"effectifs":17}],"arrivals":["10h44","11h10","11h24","11h37","11h50","12h36","13h00","13h20","14h08"]},{"jour":"Jeudi","communes":["Mugron","Caupenne","Maylis","Saint-Cricq-Chalosse","Momuy","Nassiet","Amou","Arsague","Donzacq"],"nb_stops":9,"km":104,"total_min":203,"schools":[{"commune":"Mugron","nom":"RENE BATS","type":"École Primaire Publique","poches":1,"effectifs":10},{"commune":"Mugron","nom":"Collège René Soubaigné","type":"Collège public","poches":1,"effectifs":59},{"commune":"Caupenne","nom":"RPI Caupenne Larbey Maylis Saint Aubin","type":"École Primaire Publique","poches":1,"effectifs":8},{"commune":"Maylis","nom":"RPI Caupenne Larbey Maylis Saint Aubin","type":"École Élémentaire Publique","poches":1,"effectifs":8},{"commune":"Saint-Cricq-Chalosse","nom":"RPI Doazit Saint Cricq Chalosse","type":"École Primaire Publique","poches":1,"effectifs":7},{"commune":"Momuy","nom":"nan","type":"École maternelle Publique","poches":1,"effectifs":7},{"commune":"Nassiet","nom":"RPI Castaignos Souslens Momuy Nassiet","type":"École Primaire Publique","poches":1,"effectifs":6},{"commune":"Amou","nom":" ","type":"École Élémentaire Publique","poches":1,"effectifs":7},{"commune":"Amou","nom":"Collège du Pays des Luys","type":"Collège public","poches":1,"effectifs":75},{"commune":"Arsague","nom":"RPI Arsague Bonnegarde Castel Sarrazin","type":"École Primaire Publique","poches":1,"effectifs":12},{"commune":"Donzacq","nom":"nan","type":"École maternelle Publique","poches":1,"effectifs":14}],"arrivals":["9h58","10h25","10h40","10h55","11h10","11h25","11h40","12h35","12h54"]},{"jour":"Vendredi","communes":["Pujo-le-Plan","Villeneuve-de-Marsan","Bourdalat","Cazères-sur-l'Adour","Castandet"],"nb_stops":6,"km":61,"total_min":127,"schools":[{"commune":"Pujo-le-Plan","nom":"RPI Pujo le Plan Saint Cricq Villeneuve","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Villeneuve-de-Marsan","nom":"RPI Sainte Foy Villeneuve","type":"École Élémentaire Publique","poches":3,"effectifs":43},{"commune":"Villeneuve-de-Marsan","nom":"Collège Pierre Blanquie","type":"Collège public","poches":1,"effectifs":103},{"commune":"Bourdalat","nom":"RPI Bourdalat Hontanx Saint Gein","type":"École Primaire Publique","poches":1,"effectifs":9},{"commune":"Cazères-sur-l'Adour","nom":"RPI Cazères Le Vignau","type":"École Primaire Publique","poches":1,"effectifs":20},{"commune":"Castandet","nom":"RPI Bordères Castandet Maurrin","type":"École Élémentaire Publique","poches":1,"effectifs":11}],"arrivals":["9h44","10h00","10h32","10h52","11h10"]}]};
+const COORDS={"Saugnac-et-Cambran":[43.67269358032762,-0.9894334833019528],"Seyresse":[43.68314285734206,-1.060676366030682],"Oeyreluy":[43.673272780933935,-1.0779318829303746],"Tercis-les-Bains":[43.67033407013446,-1.1152354430723446],"Heugas":[43.64428685906789,-1.0814792715960497],"Cagnotte":[43.60473178205643,-1.0768093807317467],"Gaas":[43.61054360761977,-1.0409470449539],"Pouillon":[43.60666239315016,-1.0007926552337139],"Labatut":[43.5527032773791,-0.9980923794672634],"Saint-Cricq-du-Gave":[43.52628145799866,-1.0113873408659082],"Peyrehorade":[43.55871640740484,-1.1070622563124504],"Sames (64)  64520":[43.55871640740484,-1.1070622563124504],"Orthevielle":[43.56393318943857,-1.1467379359294427],"Bélus":[43.593147597078016,-1.1170399226454961],"Saint-Lon-les-Mines":[43.62106303465572,-1.134109600632025],"Mées":[43.710358217929034,-1.1227325983880017],"Saint-Paul-en-Born":[44.20094463071502,-1.150301555294796],"Aureilhan":[44.21203979586302,-1.1894433470629597],"Mimizan":[44.18891532511377,-1.2452639805371906],"Bias":[44.13516309336913,-1.229162067227442],"Saint-Julien-en-Born":[44.09135911879155,-1.248777956415837],"Lit-et-Mixe":[44.020046478657044,-1.276472427688155],"Castets":[43.87402348578177,-1.144917061587283],"Linxe":[43.92918968599474,-1.218447934517901],"Vielle-Saint-Girons":[43.93968292211596,-1.3252811739722903],"Léon":[43.849310473330135,-1.280550442220277],"Azur":[43.798408931001696,-1.2956558021674012],"Magescq":[43.77364343896569,-1.1995047389047921],"Eugénie-les-Bains":[43.69424438113538,-0.3823354717905733],"Duhort-Bachen":[43.717245443639676,-0.32130681328145944],"Aire-sur-l'Adour":[43.69917687749815,-0.26473311091965546],"Geaune":[43.632687523900195,-0.3659781788736501],"Urgons":[43.63889562709228,-0.43250337471133227],"Miramont-Sensacq":[43.59355592198607,-0.32157529202877055],"Orx":[43.60495840904959,-1.371059990655255],"Saint-André-de-Seignanx":[43.56556920419021,-1.3583742999261692],"Saint-Martin-de-Seignanx":[43.53267134251589,-1.387811027351264],"Tarnos":[43.536969314366054,-1.4657827786353033],"Ondres":[43.565926765402544,-1.454161493537003],"Labenne":[43.595322992731425,-1.429790632294202],"Capbreton":[43.63226270012173,-1.4289621389341856],"Campagne":[43.86203172306318,-0.6394399321290024],"Meilhan":[43.859623028217705,-0.6958005653167815],"Carcarès-Sainte-Croix":[43.85495164082936,-0.7559131076500031],"Tartas":[43.81825817007575,-0.7831169507239433],"Bégaar":[43.829258609063565,-0.8556404930992831],"Carcen-Ponson":[43.871739102132985,-0.8188197590790198],"Beylongue":[43.92061282440321,-0.827768239143873],"Ygos-Saint-Saturnin":[43.99578202643822,-0.7206636427803838],"Saint-Martin-d'Oney":[43.92916154747159,-0.6522500177735542],"Le Leuy":[43.8191388009699,-0.6522340308063959],"Souprosse":[43.792861956072365,-0.7166534634564117],"Toulouzette":[43.75555460978666,-0.6738763815025925],"Labouheyre":[44.22010663273176,-0.9066056389125773],"Liposthey":[44.3087603510939,-0.8854996242726205],"Pissos":[44.29561042830013,-0.7807467125759372],"Moustey":[44.38823991781437,-0.750558704268091],"Saugnac-et-Muret":[44.38994265377568,-0.8553794523682933],"Créon-d'Armagnac":[43.99533965901951,-0.08258150748650533],"Gabarret":[43.986516023163546,-0.0040968348085500764],"Escource":[44.1658789906404,-1.0406826846431338],"Lüe":[44.23770075528641,-0.9807572049180246],"Pontenx-les-Forges":[44.254901493708644,-1.0879853614462307],"Parentis-en-Born":[44.345111471437505,-1.065395205133648],"Ychoux":[44.357272427767214,-0.9585740400079],"Sanguinet":[44.47780045790394,-1.0641318735219318],"Biscarrosse":[44.40907784912821,-1.1769671570525184],"Gastes":[44.320892868872306,-1.1946201174214017],"Onard":[43.77840516829333,-0.8320939889335679],"Vicq-d'Auribat":[43.78415168091734,-0.857241375838931],"Poyanne":[43.753724401336584,-0.8158182346472512],"Gamarde les bains":[43.727925995500094,-0.8726095801651237],"Montfort-en-Chalosse":[43.70459348881752,-0.8369636033983993],"Poyartin":[43.68813045805983,-0.8655886231800057],"Sort-en-Chalosse":[43.68247594040748,-0.9261751726682705],"Hinx":[43.70971967828084,-0.9381591071914944],"Préchacq-les-Bains":[43.75595642350997,-0.9199212866135063],"Clermont":[43.64902616916522,-0.9107168686727555],"Mimbaste":[43.646721239653516,-0.9591724928219846],"Habas":[43.56128910264399,-0.9329517628814448],"Ossage":[43.55778771803553,-0.8776125623365025],"Pomarez":[43.622038801721985,-0.8393432020675253],"Arengosse ":[44.03367788328984,-0.787164936300078],"Arjuzan / Morcenx":[44.04104893873101,-0.8883890177839637],"Morcenx":[44.04104893873101,-0.8883890177839637],"Solférino":[44.12633069746704,-0.9007105861261103],"Onesse-Laharie":[44.0721640123913,-1.0260621780858272],"Lesperon":[43.96320857914286,-1.0766957600814806],"Rion-des-Landes":[43.92999506553362,-0.9407636860694053],"Pouydesseaux":[43.987530839547645,-0.34981030139987623],"Sarbazan":[44.01391479339722,-0.3117263277093996],"Roquefort":[44.03686648386484,-0.32596517628951055],"Cachen":[44.079259713539884,-0.4168761009437775],"Retjons":[44.135464739919996,-0.3022614705756049],"Saint-Justin":[43.99781041143181,-0.23044147033409848],"Mont-de-Marsan":[43.89956773037252,-0.49066924858167316],"Mont-de-Marsan ":[43.89956773037252,-0.49066924858167316],"Saint-Pierre-du-Mont":[43.870795518121795,-0.5257212993084485],"Saint-Perdon":[43.876186659554044,-0.5921290030324021],"Haut-Mauco":[43.82922465414639,-0.5622172910811135],"Benquet":[43.82161938638438,-0.5071247335036615],"Bretagne de Marsan":[43.83718499077158,-0.4654438416467012],"Artassenx":[43.84551404914195,-0.39606144414503475],"Mazerolles":[43.885430147756914,-0.4354442611864722],"Bougue":[43.902986558480826,-0.3980020781604657],"Saint-Avit":[43.94499555828129,-0.45793620574095156],"Grenade-sur-l'Adour":[43.79235928700578,-0.4230466718524155],"Rivière-Saas-et-Gourby":[43.698943387069434,-1.1727031677018493],"Saubusse":[43.66824218793328,-1.1860141917637261],"Orist":[43.638432808045664,-1.1740485935245473],"Josse":[43.64469302107923,-1.236335919094514],"Saint-Jean-de-Marsacq":[43.6188479405502,-1.2628372304868187],"Saint-Martin-de-Hinx":[43.581431184235,-1.2772091829024885],"Sainte-Marie-de-Gosse":[43.55203446877154,-1.2321828991673596],"Saint-Laurent-de-Gosse":[43.5212118858619,-1.2833668239864053],"Saint-Etienne-d'Orthe":[43.59002003231037,-1.1868037597358718],"Saint-Geours-de-Maremne":[43.686761400265524,-1.236150012321232],"Montgaillard":[43.757284786053845,-0.4803002875723172],"Sarraziet":[43.70547282890015,-0.5010115535997919],"Vielle-Tursan":[43.68443810315809,-0.4634160999952935],"Samadet":[43.63026737638436,-0.4918179938335882],"Mant":[43.592100517894345,-0.5024315966164186],"Hagetmau":[43.650367738375316,-0.5905939488797352],"Sainte-Colombe":[43.6806376554574,-0.5566987862172509],"Dumes":[43.70390217761972,-0.5823272008684381],"Saint-Sever":[43.7613329538599,-0.5666195390026976],"Brocas":[44.04540395280157,-0.542628761660553],"Garein":[44.04897087786573,-0.649873224513651],"Labrit":[44.12597678301829,-0.5640131810949957],"Luxey":[44.2205827353142,-0.5153029769527209],"Sore":[44.30651570029662,-0.6112818100264914],"Sabres":[44.14614820183032,-0.7352649946864442],"Pontonx-sur-l'Adour":[43.79814530652146,-0.940371960286689],"Téthieu":[43.7468289053757,-0.9596664721088572],"Saint-Vincent-de-Paul":[43.766498577857284,-1.0018219829334052],"Saint-Paul-lès-Dax":[43.74628236914015,-1.0813992243327561],"Dax":[43.70092929354168,-1.059537849174123],"Narrosse":[43.69352090281708,-1.0085095717850867],"Herm":[43.80719694225787,-1.1250306501558238],"Taller":[43.88526406965024,-1.0621738124191278],"Laluque":[43.85107057856659,-0.9865047026078282],"Soustons":[43.74975447020413,-1.328212604525378],"Tosse":[43.69801919115427,-1.3177246865960022],"Saubion":[43.67347400360399,-1.332829928312041],"Angresse":[43.65804879682889,-1.3639217312620853],"Benesse Maremne":[43.63421805693842,-1.364842293641801],"Soorts-Hossegor":[43.667779999956046,-1.4119664924534283],"Seignosse":[43.70235821217712,-1.3980059669946239],"Saint-Vincent-de-Tyrosse":[43.65894712270128,-1.300403565839505],"Vieux-Boucau-les-Bains":[43.78736018284519,-1.3972107404022698],"Mugron":[43.74097672533269,-0.7522232722938961],"Caupenne":[43.68422038342068,-0.7542704813798731],"Maylis":[43.69281416668252,-0.6999953992493289],"Saint-Cricq-Chalosse":[43.65440909119525,-0.6760252563686663],"Momuy":[43.6167102729682,-0.6390173629917909],"Nassiet":[43.59888307654564,-0.6897340271704873],"Amou":[43.59348588126809,-0.7441799796982599],"Arsague":[43.58164461120272,-0.7904236246612026],"Donzacq":[43.65905834173276,-0.8068382817572404],"Pujo-le-Plan":[43.86190211109851,-0.34214198351123437],"Villeneuve-de-Marsan":[43.90565962505902,-0.30407300964707734],"Bourdalat":[43.83101847833338,-0.21492015623637997],"Cazères-sur-l'Adour":[43.764850527639545,-0.2846798528135585],"Castandet":[43.8075417618957,-0.35185237140644393]};
+
+function initApp(){
+const AGENT_COLORS={1:'#4fffb0',2:'#38bdf8',3:'#fb923c',4:'#e879f9',5:'#fbbf24'};
+const DEPOT=[43.8891,-0.4997];
+
+const map=L.map('map',{center:[43.9,-0.7],zoom:9});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19}).addTo(map);
+L.marker(DEPOT,{icon:L.divIcon({className:'',html:'<div style="font-size:16px;line-height:1">🏠</div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map).bindPopup('<b>Dépôt · Mont-de-Marsan</b>');
+
+let allLayers=[], activeCard=null, filterAgent='all', filterDay='all';
+
+// Build route layers
+const routeData=[];
+let idx=0;
+Object.entries(PLAN).forEach(([agentName,days])=>{
+  const agentNum=parseInt(agentName.split(' ')[1]);
+  const color=AGENT_COLORS[agentNum];
+  days.forEach(day=>{
+    const coords=day.communes.map(c=>{
+      const raw=COORDS[c]; if(!raw) return null;
+      return [raw[0],raw[1]];
+    }).filter(Boolean);
+    const latlngs=[DEPOT,...coords,DEPOT];
+    const poly=L.polyline(latlngs,{color,weight:2.5,opacity:.75});
+    const markers=coords.map((ll,i)=>{
+      const m=L.circleMarker(ll,{radius:5,fillColor:color,color:'#0f1117',weight:1.5,fillOpacity:.9});
+      const arr=day.arrivals&&day.arrivals[i]?`<br><span style="color:#ffd166">⏱ ${day.arrivals[i]}</span>`:'';
+      m.bindPopup(`<b>${day.communes[i]}</b>${arr}<br>${agentName} · ${day.jour}`);
+      return m;
+    });
+    routeData.push({agentNum,agentName,day,poly,markers,idx:idx++});
+  });
+});
+
+function renderMap(){
+  allLayers.forEach(({poly,markers})=>{poly.remove();markers.forEach(m=>m.remove());});
+  allLayers=[];
+  routeData.forEach(rd=>{
+    const show=(filterAgent==='all'||rd.agentNum===parseInt(filterAgent))&&(filterDay==='all'||rd.day.jour===filterDay);
+    if(show){rd.poly.addTo(map);rd.markers.forEach(m=>m.addTo(map));allLayers.push(rd);}
+  });
+}
+
+function renderSidebar(){
+  const list=document.getElementById('routesList');
+  list.innerHTML='';
+  routeData.forEach(rd=>{
+    const show=(filterAgent==='all'||rd.agentNum===parseInt(filterAgent))&&(filterDay==='all'||rd.day.jour===filterDay);
+    const color=AGENT_COLORS[rd.agentNum];
+    const h=Math.floor(rd.day.total_min/60),m=rd.day.total_min%60;
+    const pct=Math.min(rd.day.total_min/390*100,100).toFixed(0);
+    const badgeClass=rd.day.total_min>370?'warn':'ok';
+
+    // Build stops HTML
+    const stopsHtml=rd.day.schools.map((s,si)=>{
+      const arr=rd.day.arrivals?rd.day.arrivals[rd.day.communes.indexOf(s.commune)]:'';
+      const isCollege=s.type.toLowerCase().includes('collège');
+      const isPriv=s.type.toLowerCase().includes('priv');
+      const typeLabel=isCollege?'collège':(isPriv?'privé':'public');
+      const typeClass=isCollege?'college':(isPriv?'priv':'');
+      return `<div class="stop-item">
+        <span class="stop-time">${arr}</span>
+        <div>
+          <div class="stop-school">${s.nom||'—'}</div>
+          <span class="stop-type ${typeClass}">${typeLabel}</span>
+        </div>
+        <div class="stop-commune">${s.commune}</div>
+        <span class="stop-poches">${s.poches}p</span>
+        <span style="font-size:.6rem;color:var(--muted)">${s.effectifs>0?s.effectifs+'él':''}</span>
+      </div>`;
+    }).join('');
+
+    const card=document.createElement('div');
+    card.className='route-card'+(show?'':' hidden');
+    card.dataset.idx=rd.idx;
+    card.innerHTML=`
+      <div class="route-card-header">
+        <div class="route-dot" style="background:${color}"></div>
+        <div class="route-meta">
+          <div class="route-title">${rd.agentName} — ${rd.day.jour}</div>
+          <div class="route-sub">${rd.day.communes.length} communes · ${rd.day.km} km · départ 9h30</div>
+        </div>
+        <div class="route-badges">
+          <span class="badge ${badgeClass}">${h}h${String(m).padStart(2,'0')}</span>
+          <span class="badge">${rd.day.nb_stops} arrêts</span>
+        </div>
+      </div>
+      <div class="time-bar"><div class="time-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="route-stops">
+        <div class="stop-header"><span>Heure</span><span>Établissement</span><span>Commune</span><span>Poches</span><span>Élèves</span></div>
+        ${stopsHtml}
+      </div>`;
+
+    card.addEventListener('click',()=>{
+      if(activeCard===rd.idx){
+        card.classList.remove('active');activeCard=null;
+        document.getElementById('infoBar').classList.remove('show');
+        renderMap();
+      } else {
+        document.querySelectorAll('.route-card').forEach(c=>c.classList.remove('active'));
+        card.classList.add('active');activeCard=rd.idx;
+        allLayers.forEach(l=>l.poly.setStyle({opacity:.15,weight:1.5}));
+        const target=allLayers.find(l=>l.idx===rd.idx);
+        if(target){
+          target.poly.setStyle({opacity:1,weight:3.5});
+          try{map.fitBounds(target.poly.getBounds(),{padding:[40,40]});}catch(e){}
+        }
+        const h2=Math.floor(rd.day.total_min/60),m2=rd.day.total_min%60;
+        document.getElementById('ibTitle').textContent=`${rd.agentName} · ${rd.day.jour}`;
+        document.getElementById('ibDetail').textContent=`${rd.day.nb_stops} arrêts · ${rd.day.km} km · ~${h2}h${String(m2).padStart(2,'0')} · Mont-de-Marsan → ${rd.day.communes.slice(0,4).join(' → ')}${rd.day.communes.length>4?' → …':''}`;
+        document.getElementById('infoBar').classList.add('show');
+      }
+    });
+    list.appendChild(card);
+  });
+}
+
+// Filters
+document.querySelectorAll('.agent-tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.agent-tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); filterAgent=t.dataset.agent; activeCard=null; renderMap(); renderSidebar();
+}));
+document.querySelectorAll('.day-tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.day-tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); filterDay=t.dataset.day; activeCard=null; renderMap(); renderSidebar();
+}));
+
+document.getElementById('ibClose').addEventListener('click',()=>{
+  document.getElementById('infoBar').classList.remove('show');
+  document.querySelectorAll('.route-card').forEach(c=>c.classList.remove('active'));
+  activeCard=null; renderMap();
+});
+
+// CSV Export
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const rows=['\uFEFFAgent,Jour,Heure estimée,Ordre,Commune,Établissement,Type,Pochettes,Effectifs'];
+  Object.entries(PLAN).forEach(([agent,days])=>{
+    days.forEach(day=>{
+      let order=1;
+      day.communes.forEach((commune,ci)=>{
+        const arr=day.arrivals&&day.arrivals[ci]?day.arrivals[ci]:'';
+        const schools=day.schools.filter(s=>s.commune===commune);
+        schools.forEach(s=>{
+          rows.push([agent,day.jour,arr,order++,
+            `"${commune}"`,`"${(s.nom||'').replace(/"/g,'""')}"`,
+            `"${s.type}"`,s.poches,s.effectifs].join(','));
+        });
+      });
+    });
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='tournees-ulata-1semaine.csv';a.click();
+  URL.revokeObjectURL(url);
+});
+
+renderMap();
+renderSidebar();
+} // end initApp
+</script>
+</body>
+</html>
